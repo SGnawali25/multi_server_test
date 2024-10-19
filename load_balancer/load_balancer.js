@@ -1,33 +1,38 @@
 const express = require('express');
-const httpProxy = require('http');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
 const app = express();
 
+// List of external servers to balance traffic
 const servers = [
-  { host: 'localhost', port: 3001 },
-  { host: 'localhost', port: 3002 },
-  { host: 'localhost', port: 3003 },
+  'https://server1-beta.vercel.app',
+  'https://server2-puce.vercel.app'
 ];
 
 let currentIndex = 0;
 
-// Middleware to forward requests to one of the backend servers
-app.use((req, res) => {
+// Middleware to handle load balancing
+app.use((req, res, next) => {
+  // Pick the server using round-robin
   const targetServer = servers[currentIndex];
-  console.log(req)
-  
-  // Forward the request to the target server using http proxy
-  const proxy = httpProxy.request(
-    { host: targetServer.host, port: targetServer.port, path: req.url, method: req.method, headers: req.headers },
-    (proxyRes) => {
-      res.writeHead(proxyRes.statusCode, proxyRes.headers);
-      proxyRes.pipe(res);
-    }
-  );
 
-  // Forward the body of the request to the target server
-  req.pipe(proxy);
+  // Forward the request to the selected server
+  const proxy = createProxyMiddleware({
+    target: targetServer,
+    changeOrigin: true, // Needed for proxying external domains
+    pathRewrite: { '^/': '/' }, // Keep the original path
+    onProxyRes: (proxyRes, req, res) => {
+      console.log(`Request proxied to: ${targetServer}${req.url}`);
+    },
+    onError: (err, req, res) => {
+      console.error(`Error proxying to: ${targetServer} - ${err.message}`);
+      res.status(502).send('Bad Gateway');
+    },
+  });
 
-  // Round-robin logic to balance requests across servers
+  proxy(req, res, next);
+
+  // Update the index to implement round-robin
   currentIndex = (currentIndex + 1) % servers.length;
 });
 

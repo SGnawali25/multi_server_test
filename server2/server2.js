@@ -7,6 +7,10 @@ const PORT = 3002;
 app.get('/', (req, res) => {
     res.send(`Hello from Express server running on port ${PORT}`);
   });
+
+app.get("/test", (req, res) => {
+    res.send("Different route test from server2")
+})
   
 // Start the server
 app.listen(PORT, () => {
