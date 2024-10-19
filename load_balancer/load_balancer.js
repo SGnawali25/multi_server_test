@@ -1,13 +1,25 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const dotenv = require('dotenv');
 
 const app = express();
 
+//setting up environment variables
+dotenv.config({path:'.env'})
+
 // List of external servers to balance traffic
-const servers = [
-  'https://server1-beta.vercel.app',
-  'https://server2-puce.vercel.app'
-];
+const serverCount = parseInt(process.env.SERVER_COUNT, 10);
+console.log(`Server Count: ${serverCount}`);
+
+const servers = [];
+
+for (let i = 1; i <= serverCount; i++) {
+  const server = process.env[`SERVER${i}`];
+  if (server) {
+    servers.push(server);
+  }
+}
+console.log(servers)
 
 let currentIndex = 0;
 
@@ -36,7 +48,9 @@ app.use((req, res, next) => {
   currentIndex = (currentIndex + 1) % servers.length;
 });
 
+const port = process.env.PORT
+
 // Start the load balancer on port 3000
-app.listen(3000, () => {
-  console.log('Load balancer is running on port 3000');
+app.listen(port, () => {
+  console.log(`Load balancer is running on port ${port}`);
 });
