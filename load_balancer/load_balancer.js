@@ -9,7 +9,7 @@ dotenv.config({path:'.env'})
 
 // List of external servers to balance traffic
 const serverCount = parseInt(process.env.SERVER_COUNT, 10);
-console.log(`Server Count: ${serverCount}`);
+
 
 const servers = [];
 
@@ -19,7 +19,6 @@ for (let i = 1; i <= serverCount; i++) {
     servers.push(server);
   }
 }
-console.log(servers)
 
 let currentIndex = 0;
 
