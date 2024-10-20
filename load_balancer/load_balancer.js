@@ -1,8 +1,11 @@
 const express = require('express');
+const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const dotenv = require('dotenv');
 
 const app = express();
+
+app.use('/static', express.static(path.join(__dirname, 'public')));
 
 //setting up environment variables
 dotenv.config({path:'.env'})

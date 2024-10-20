@@ -1,11 +1,22 @@
 const express = require('express');
+const path = require('path');
 
 const app = express();
 const PORT = 3001;
 
+app.use('/static', express.static(path.join(__dirname, 'public')));
+
+
 // Simple route for demonstration
 app.get('/', (req, res) => {
-    res.send(`Hello server test from server 1`);
+    res.send(`
+    <html>
+      <body>
+        <h1>Hello from the Server 1</h1>
+        <img src="/static/images/server1.jpeg" alt="Example Image"/>
+      </body>
+    </html>
+  `);
   });
 
 
